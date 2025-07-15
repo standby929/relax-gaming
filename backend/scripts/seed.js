@@ -1,0 +1,45 @@
+require('dotenv').config();
+const mongoose = require('mongoose');
+const Player = require('../models/Player');
+
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB connected for seeding'))
+.catch((err) => {
+  console.error('Connection error:', err);
+  process.exit(1);
+});
+
+// Seed data
+const seedPlayers = [
+  { name: 'RelaxHard', score: 150 },
+  { name: 'PunishingRelax', score: 120 },
+  { name: 'RelaxTank', score: 90 },
+  { name: 'ProfessorRelax', score: 80 },
+  { name: 'SoloRelax', score: 75 },
+  { name: 'FiresideRelax', score: 65 },
+  { name: 'RelaxPrincess', score: 60 },
+  { name: 'FreakingCasino', score: 55 },
+  { name: 'CasinoDraco', score: 50 },
+  { name: 'NiteCasino', score: 45 }
+];
+
+// Futtatás
+async function seedDB() {
+  try {
+    await Player.deleteMany({});
+    console.log('Existing players cleared.');
+
+    await Player.insertMany(seedPlayers);
+    console.log('Sample players inserted.');
+  } catch (error) {
+    console.error('Seeding error:', error);
+  } finally {
+    mongoose.connection.close();
+  }
+}
+
+seedDB();
