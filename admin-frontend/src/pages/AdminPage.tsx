@@ -1,98 +1,118 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchPlayers } from '../api/playerApi';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import type { Player } from '../types/player';
 import Profile from '../components/Profile';
 import SearchBar from '../components/SearchBar';
+import PlayerDrawer from '../components/PlayerDrawer';
+import NoResult from '../components/NoResult';
+import { PlayerList } from '../components/PlayerList';
+
+import RelaxLogo from '../assets/logo-relax-gaming.svg';
+import { UserPlusIcon } from '@heroicons/react/24/solid';
+
 
 export default function AdminPage() {
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const parentRef = useRef<HTMLDivElement>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [playerToEdit, setPlayerToEdit] = useState<Player | undefined>();
 
   useEffect(() => {
-  const loadPlayers = async () => {
-    const all = await fetchPlayers();
-    setAllPlayers(all);
-    // I could have user server-side filtering, but for simplicity, I will filter on the client side.
-    const filtered = searchTerm
-      ? all.filter((p) =>
-          p.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      : all;
+    setIsLoading(true);
+    const load = async () => {
+      const data = await fetchPlayers();
+      setAllPlayers(data);
+      setFilteredPlayers(data);
+      setIsLoading(false);
+    };
+    load();
+  }, []);
 
-    setPlayers(filtered);
+  useEffect(() => {
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase();
+      setFilteredPlayers(
+        allPlayers.filter((p) => p.name.toLowerCase().includes(lower))
+      );
+    } else {
+      setFilteredPlayers(allPlayers);
+    }
+  }, [searchTerm, allPlayers]);
+
+  const handleDelete = (player: Player) => {
+    console.log('Delete player:', player);
+    // Implement delete logic here, e.g., API call
   };
-
-  loadPlayers();
-}, [searchTerm]);
-
-  const rowVirtualizer = useVirtualizer({
-    count: players.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 60,
-  });
 
   return (
     <div className="min-h-screen bg-gray-100 px-4 pt-4 pb-8">
       {/* Header and profile */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Player List</h1>
+        <img src={RelaxLogo} alt="Relax Gaming Logo" className="w-40 mb-6" />
         <Profile />
       </div>
 
-      <div className="flex justify-between items-center mb-4 gap-4">
+      {/* Search bar, button(s) and results info */}
+      <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
         <div className="text-sm text-gray-600 ml-1">
-          Results: {players.length}
+          Results: {filteredPlayers.length}
           {searchTerm && (
-            <span className="text-gray-400"> (filtered from {allPlayers.length})</span>
+            <span className="text-gray-400">
+              {' '}
+              (filtered from {allPlayers.length})
+            </span>
           )}
         </div>
-        <SearchBar onSearch={(query) => setSearchTerm(query)} />
-      </div>
-        
-      {/* Scrollable list container */}
-      <div
-        ref={parentRef}
-        className="overflow-auto max-h-[calc(100vh-140px)] border border-gray-200 rounded bg-white shadow"
-      >
-        <div
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            position: 'relative',
-          }}
-        >
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const player = players[virtualRow.index];
-            const isStriped = virtualRow.index % 2 === 1;
-            return (
-              <div
-                key={player._id}
-                className={`absolute top-0 left-0 w-full px-4 py-3 border-b text-sm transition-colors duration-150 ${
-                  isStriped ? 'bg-gray-50' : 'bg-white'
-                } hover:bg-gray-100 border-gray-200`}
-                style={{
-                  transform: `translateY(${virtualRow.start}px)`,
-                  height: `${virtualRow.size}px`,
-                }}
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-gray-800">{player.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(player.lastUpdated).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="font-semibold text-gray-700 text-base">
-                    {player.score}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+
+        <div className="flex items-center gap-2">
+          <SearchBar onSearch={(query) => setSearchTerm(query)} />
+          <button
+            onClick={() => {
+              setPlayerToEdit(undefined);
+              setDrawerOpen(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-white rounded bg-teal-400 hover:bg-teal-500 transition-colors"
+          >
+            <UserPlusIcon className="h-5 w-5" />
+            <span className="hidden sm:inline">Add Player</span>
+            <span className="inline sm:hidden">Add</span>
+          </button>
         </div>
       </div>
+
+      {/* Scrollable list container */}
+      <div className="flex flex-col h-[calc(100vh-195px)]">
+        <div className="flex-1 overflow-hidden min-h-0">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>
+          ) : filteredPlayers.length === 0 ? (
+            <NoResult message={searchTerm ? 'No players match your search.' : 'No players available.'} />
+          ) : (
+            <PlayerList
+              players={filteredPlayers}
+              onEdit={(p) => {
+                setPlayerToEdit(p);
+                setDrawerOpen(true);
+              }}
+              onDelete={handleDelete}
+            />
+          )}
+        </div>
+      </div>
+
+      <PlayerDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onSave={(newPlayer) => {
+          // Küldd a backendre pl. POST-ként
+          // Itt lehet egy API hívás, majd újratöltés
+          console.log('Save player:', newPlayer);
+          setDrawerOpen(false);
+        }}
+        existingPlayer={playerToEdit}
+      />
     </div>
   );
 }

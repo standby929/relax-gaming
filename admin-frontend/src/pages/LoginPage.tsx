@@ -4,6 +4,8 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../auth/AuthContext';
 
+import RelaxLogo from '../assets/logo-relax-gaming.svg';
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
@@ -17,6 +19,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
+      <img src={RelaxLogo} alt="Relax Gaming Logo" className="w-40 mb-6" />
+
       <h1 className="text-2xl font-bold mb-6">Admin Login</h1>
       <GoogleLogin
         onSuccess={(credentialResponse) => {
