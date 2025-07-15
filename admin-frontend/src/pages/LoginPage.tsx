@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
@@ -5,7 +6,14 @@ import { useAuth } from '../auth/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
+
+  // If the user is already logged in, redirect to the admin page
+  useEffect(() => {
+    if (user) {
+      navigate('/admin');
+    }
+  }, [user, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
