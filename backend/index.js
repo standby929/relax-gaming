@@ -3,14 +3,15 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// Middleware
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// MongoDB csatlakozás
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -21,6 +22,9 @@ mongoose.connect(process.env.MONGO_URI, {
 // Routes
 const playerRoutes = require('./routes/players');
 app.use('/api', playerRoutes);
+
+// Error handling middleware
+app.use(errorHandler);
 
 // Start
 const PORT = process.env.PORT || 5000;
