@@ -3,10 +3,20 @@ const asyncHandler = require('express-async-handler');
 const router = express.Router();
 const Player = require('../models/Player');
 
-// GET /leaderboard – Getting all players
+/****************** PUBLIC ROUTES ********************** */
+
+// GET /leaderboard – Getting Top10 players
 router.get('/leaderboard', asyncHandler(async (req, res) => {
   const topPlayers = await Player.find().sort({ score: -1 }).limit(10);
   res.json(topPlayers);
+}));
+
+/****************** ADMIN ROUTES ********************** */
+
+// GET /players – Get all players
+router.get('/players', asyncHandler(async (req, res) => {
+  const players = await Player.find().sort({ score: -1 });
+  res.json(players);
 }));
 
 // POST /players – Create new player
