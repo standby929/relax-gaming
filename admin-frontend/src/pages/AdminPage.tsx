@@ -55,7 +55,7 @@ export default function AdminPage() {
       </div>
 
       {/* Search bar, button(s) and results info */}
-      <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 mb-4">
         <div className="text-sm text-gray-600 ml-1">
           Results: {filteredPlayers.length}
           {searchTerm && (
@@ -66,24 +66,29 @@ export default function AdminPage() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
           <SearchBar onSearch={(query) => setSearchTerm(query)} />
           <button
             onClick={() => {
               setPlayerToEdit(undefined);
               setDrawerOpen(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-white rounded bg-teal-400 hover:bg-teal-500 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-white rounded bg-teal-400 hover:bg-teal-500 transition-colors"
           >
             <UserPlusIcon className="h-5 w-5" />
-            <span className="hidden sm:inline">Add Player</span>
-            <span className="inline sm:hidden">Add</span>
+            Add Player
           </button>
         </div>
       </div>
 
       {/* Scrollable list container */}
-      <div className="flex flex-col h-[calc(100vh-195px)]">
+      <div
+        className="
+          flex flex-col
+          h-[calc(100vh-270px)]  // mobile (default)
+          sm:h-[calc(100vh-195px)] // tablet+
+        "
+      >
         <div className="flex-1 overflow-hidden min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>
