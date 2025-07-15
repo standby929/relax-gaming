@@ -3,18 +3,30 @@ import { fetchPlayers } from '../api/playerApi';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { Player } from '../types/player';
 import Profile from '../components/Profile';
+import SearchBar from '../components/SearchBar';
 
 export default function AdminPage() {
   const [players, setPlayers] = useState<Player[]>([]);
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const parentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const loadPlayers = async () => {
-      const data = await fetchPlayers();
-      setPlayers(data);
-    };
-    loadPlayers();
-  }, []);
+  const loadPlayers = async () => {
+    const all = await fetchPlayers();
+    setAllPlayers(all);
+    // I could have user server-side filtering, but for simplicity, I will filter on the client side.
+    const filtered = searchTerm
+      ? all.filter((p) =>
+          p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : all;
+
+    setPlayers(filtered);
+  };
+
+  loadPlayers();
+}, [searchTerm]);
 
   const rowVirtualizer = useVirtualizer({
     count: players.length,
@@ -30,6 +42,16 @@ export default function AdminPage() {
         <Profile />
       </div>
 
+      <div className="flex justify-between items-center mb-4 gap-4">
+        <div className="text-sm text-gray-600 ml-1">
+          Results: {players.length}
+          {searchTerm && (
+            <span className="text-gray-400"> (filtered from {allPlayers.length})</span>
+          )}
+        </div>
+        <SearchBar onSearch={(query) => setSearchTerm(query)} />
+      </div>
+        
       {/* Scrollable list container */}
       <div
         ref={parentRef}
