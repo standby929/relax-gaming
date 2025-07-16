@@ -30,13 +30,13 @@ export default function LeaderboardPage() {
           <li key={player._id} className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-4">
               <img
-                src={`/avatars/${player.avatarId || 'placeholder'}.png`}
-                alt="avatar"
+                src={player.avatarId ? `/avatars/${player.avatarId}.png` : 'https://placehold.co/40'}
+                alt={player.name}
                 className="w-10 h-10 rounded-full object-cover border"
               />
-              <span className="font-medium text-gray-100">{player.name}</span>
+              <span className="text-white font-medium truncate">{player.name}</span>
             </div>
-            <span className="font-semibold text-blue-200">{player.score}</span>
+            <div className="text-cyan-400 font-bold text-right w-20">{player.score}</div>
           </li>
         ))}
       </ul>
