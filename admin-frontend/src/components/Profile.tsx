@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../auth/AuthContext';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 
 export default function Profile() {
   const { user, setUser } = useAuth();
@@ -9,16 +10,7 @@ export default function Profile() {
   if (!user) return null;
 
   // Click outside to close the dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
+  useOutsideClick(dropdownRef, () => setOpen(false), open);
   return (
     <div className="absolute top-4 right-4 z-50">
       <div className="relative" ref={dropdownRef}>

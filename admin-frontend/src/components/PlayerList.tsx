@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRef } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList as VirtualList } from 'react-window';
 
@@ -10,6 +11,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from '@heroicons/react/24/solid';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 
 export const PlayerList: FC<PlayerListProps> = ({ players, onEdit, onDelete }) => {
   return (
@@ -47,6 +49,10 @@ const PlayerRow: FC<{
   index: number;
 }> = ({ player, onEdit, onDelete, index }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Close menu on outside click
+  useOutsideClick(menuRef, () => setMenuOpen(false), menuOpen);
 
   return (
     <div
@@ -72,7 +78,7 @@ const PlayerRow: FC<{
       </div>
 
       {menuOpen && (
-        <div className="absolute right-12 top-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded px-2 py-1 shadow flex gap-2 z-10">
+        <div ref={menuRef} className="absolute right-12 top-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded px-2 py-1 shadow flex gap-2 z-10">
           <button
             onClick={() => {
               onEdit(player);
