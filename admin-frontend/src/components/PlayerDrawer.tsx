@@ -69,6 +69,11 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
     }
   }, [existingPlayer, isOpen, reset]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setNameError(null); // reset error when drawer opens
+    }
+  }, [isOpen]);
 
   return (
     <div
