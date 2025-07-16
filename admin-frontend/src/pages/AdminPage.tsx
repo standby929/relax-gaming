@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchPlayerById, fetchPlayers, createPlayer, updatePlayer } from '../api/playerApi';
+import { fetchPlayerById, fetchPlayers, createPlayer, updatePlayer, deletePlayer } from '../api/playerApi';
 import type { Player } from '../types/player';
 import Profile from '../components/Profile';
 import SearchBar from '../components/SearchBar';
@@ -10,6 +10,7 @@ import { PlayerList } from '../components/PlayerList';
 
 import RelaxLogo from '../assets/logo-relax-gaming.svg';
 import { UserPlusIcon } from '@heroicons/react/24/solid';
+import ConfirmModal from '../components/ConfirmModal';
 
 
 export default function AdminPage() {
@@ -20,6 +21,42 @@ export default function AdminPage() {
   const [playerToEdit, setPlayerToEdit] = useState<Player | undefined>(undefined);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleEdit = async (playerId: string) => {
+    setIsEditLoading(true);
+    try {
+      const detailedPlayer = await fetchPlayerById(playerId);
+      setPlayerToEdit(detailedPlayer);
+      setDrawerOpen(true);
+    } catch (err) {
+      console.error('Failed to fetch player:', err);
+    } finally {
+      setIsEditLoading(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!playerToDelete) return;
+    setIsDeleting(true);
+
+    try {
+      await deletePlayer(playerToDelete._id);
+      const updated = await fetchPlayers();
+      setAllPlayers(updated);
+      setFilteredPlayers(updated);
+    } catch (err) {
+      console.error('Failed to delete player:', err);
+    } finally {
+      setIsDeleting(false);
+      setPlayerToDelete(null); // modal bezárása itt történik
+    }
+  };
+
+  const handleDelete = (player: Player) => {
+    setPlayerToDelete(player);
+  };
 
   useEffect(() => {
     setIsLoading(true);
@@ -42,24 +79,6 @@ export default function AdminPage() {
       setFilteredPlayers(allPlayers);
     }
   }, [searchTerm, allPlayers]);
-
-  const handleEdit = async (playerId: string) => {
-    setIsEditLoading(true);
-    try {
-      const detailedPlayer = await fetchPlayerById(playerId);
-      setPlayerToEdit(detailedPlayer);
-      setDrawerOpen(true);
-    } catch (err) {
-      console.error('Failed to fetch player:', err);
-    } finally {
-      setIsEditLoading(false);
-    }
-  };
-
-  const handleDelete = (player: Player) => {
-    console.log('Delete player:', player);
-    // Implement delete logic here, e.g., API call
-  };
 
   return (
     <div className="min-h-screen bg-gray-100 px-4 pt-4 pb-8">
@@ -149,6 +168,16 @@ export default function AdminPage() {
         }}
         existingPlayer={playerToEdit}
         isLoading={isEditLoading}
+      />
+
+      <ConfirmModal
+        isOpen={!!playerToDelete}
+        title='Confirm Deletion'
+        message='Are you sure you want to delete the player'
+        itemName={playerToDelete?.name || ''}
+        inProgress={isDeleting}
+        onCancel={() => setPlayerToDelete(null)}
+        onConfirm={confirmDelete}
       />
     </div>
   );
