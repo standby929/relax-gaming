@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { fetchPlayers } from '../api/playerApi';
+import { fetchPlayerById, fetchPlayers } from '../api/playerApi';
 import type { Player } from '../types/player';
 import Profile from '../components/Profile';
 import SearchBar from '../components/SearchBar';
 import PlayerDrawer from '../components/PlayerDrawer';
+import Spinner from '../components/Spinner';
 import NoResult from '../components/NoResult';
 import { PlayerList } from '../components/PlayerList';
 
@@ -16,8 +17,9 @@ export default function AdminPage() {
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [playerToEdit, setPlayerToEdit] = useState<Player | undefined>(undefined);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [playerToEdit, setPlayerToEdit] = useState<Player | undefined>();
+  const [isEditLoading, setIsEditLoading] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -40,6 +42,19 @@ export default function AdminPage() {
       setFilteredPlayers(allPlayers);
     }
   }, [searchTerm, allPlayers]);
+
+  const handleEdit = async (playerId: string) => {
+    setIsEditLoading(true);
+    try {
+      const detailedPlayer = await fetchPlayerById(playerId);
+      setPlayerToEdit(detailedPlayer);
+      setDrawerOpen(true);
+    } catch (err) {
+      console.error('Failed to fetch player:', err);
+    } finally {
+      setIsEditLoading(false);
+    }
+  };
 
   const handleDelete = (player: Player) => {
     console.log('Delete player:', player);
@@ -91,16 +106,15 @@ export default function AdminPage() {
       >
         <div className="flex-1 overflow-hidden min-h-0">
           {isLoading ? (
-            <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>
+            <div className="flex items-center justify-center h-full text-gray-400">
+              <Spinner size="xl" className="text-teal-500" />
+            </div>
           ) : filteredPlayers.length === 0 ? (
             <NoResult message={searchTerm ? 'No players match your search.' : 'No players available.'} />
           ) : (
             <PlayerList
               players={filteredPlayers}
-              onEdit={(p) => {
-                setPlayerToEdit(p);
-                setDrawerOpen(true);
-              }}
+              onEdit={(player) => handleEdit(player._id)}
               onDelete={handleDelete}
             />
           )}
@@ -117,6 +131,7 @@ export default function AdminPage() {
           setDrawerOpen(false);
         }}
         existingPlayer={playerToEdit}
+        isLoading={isEditLoading}
       />
     </div>
   );

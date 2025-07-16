@@ -3,4 +3,5 @@ export interface Player {
   name: string;
   score: number;
   lastUpdated: string;
+  avatarId?: string;
 }

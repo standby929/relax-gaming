@@ -19,6 +19,16 @@ router.get('/players', asyncHandler(async (req, res) => {
   res.json(players);
 }));
 
+// GET /players/:id – Get player by ID
+router.get('/players/:id', asyncHandler(async (req, res) => {
+  const player = await Player.findById(req.params.id);
+  if (!player) {
+    res.status(404);
+    throw new Error('Player not found');
+  }
+  res.json(player);
+}));
+
 // POST /players – Create new player
 router.post('/players', asyncHandler(async (req, res) => {
   const { name, score } = req.body;
