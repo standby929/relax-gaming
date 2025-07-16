@@ -27,6 +27,7 @@ export default function LoginPage() {
           if (credentialResponse.credential) {
             const decoded: any = jwtDecode(credentialResponse.credential);
             setUser(decoded);
+            localStorage.setItem('google_jwt', credentialResponse.credential);
             navigate('/admin');
           }
         }}

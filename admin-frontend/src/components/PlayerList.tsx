@@ -12,6 +12,7 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/solid';
 import { useOutsideClick } from '../hooks/useOutsideClick';
+import { AVATARS } from '../api/avatars';
 
 export const PlayerList: FC<PlayerListProps> = ({ players, onEdit, onDelete }) => {
   return (
@@ -50,6 +51,8 @@ const PlayerRow: FC<{
 }> = ({ player, onEdit, onDelete, index }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const avatar = AVATARS.find(a => a.id === player.avatarId);
+  const avatarUrl = avatar?.url || 'https://placehold.co/40'; // Fallback if no avatar is set just for the simplicity
 
   // Close menu on outside click
   useOutsideClick(menuRef, () => setMenuOpen(false), menuOpen);
@@ -60,13 +63,22 @@ const PlayerRow: FC<{
         index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
       } hover:bg-gray-100`}
     >
-      <div>
-        <div className="font-semibold">{player.name}</div>
-        <div className="text-sm text-gray-500">
-          {new Date(player.lastUpdated).toLocaleString()}
+      {/* Left: avatar + name + date */}
+      <div className="flex items-center gap-4">
+        <img
+          src={avatarUrl}
+          alt={player.name}
+          className="w-10 h-10 rounded-full object-cover border border-gray-300"
+        />
+        <div>
+          <div className="font-semibold">{player.name}</div>
+          <div className="text-sm text-gray-500">
+            {new Date(player.lastUpdated).toLocaleString()}
+          </div>
         </div>
       </div>
 
+      {/* Right: score + menu */}
       <div className="flex items-center gap-4">
         <div className="font-bold text-lg">{player.score}</div>
         <button
@@ -78,7 +90,10 @@ const PlayerRow: FC<{
       </div>
 
       {menuOpen && (
-        <div ref={menuRef} className="absolute right-12 top-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded px-2 py-1 shadow flex gap-2 z-10">
+        <div
+          ref={menuRef}
+          className="absolute right-12 top-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded px-2 py-1 shadow flex gap-2 z-10"
+        >
           <button
             onClick={() => {
               onEdit(player);

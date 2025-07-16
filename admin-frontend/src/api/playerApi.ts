@@ -1,6 +1,15 @@
 import axios from 'axios';
 import type { CreatePlayerDto, Player } from '../types/player';
 
+// Set the JWT token in the Authorization header for all requests
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem('google_jwt');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const fetchPlayers = async (): Promise<Player[]> => {
   const response = await axios.get<Player[]>('/api/players');
   return response.data;

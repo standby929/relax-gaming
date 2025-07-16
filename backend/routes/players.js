@@ -1,6 +1,7 @@
 const express = require('express');
 const asyncHandler = require('express-async-handler');
 const router = express.Router();
+const auth = require('../middleware/auth');
 const Player = require('../models/Player');
 
 /****************** PUBLIC ROUTES ********************** */
@@ -14,13 +15,13 @@ router.get('/leaderboard', asyncHandler(async (req, res) => {
 /****************** ADMIN ROUTES ********************** */
 
 // GET /players – Get all players
-router.get('/players', asyncHandler(async (req, res) => {
+router.get('/players', auth, asyncHandler(async (req, res) => {
   const players = await Player.find().sort({ score: -1 });
   res.json(players);
 }));
 
 // GET /players/:id – Get player by ID
-router.get('/players/:id', asyncHandler(async (req, res) => {
+router.get('/players/:id', auth, asyncHandler(async (req, res) => {
   const player = await Player.findById(req.params.id);
   if (!player) {
     res.status(404);
@@ -30,7 +31,7 @@ router.get('/players/:id', asyncHandler(async (req, res) => {
 }));
 
 // POST /players – Create new player
-router.post('/players', async (req, res) => {
+router.post('/players', auth, async (req, res) => {
   const { name, score, avatarId } = req.body;
 
   const existing = await Player.findOne({ name: name.trim() });
@@ -44,7 +45,7 @@ router.post('/players', async (req, res) => {
 });
 
 // PUT /players/:id – Modify player score
-router.put('/players/:id', async (req, res) => {
+router.put('/players/:id', auth, async (req, res) => {
   const { id } = req.params;
   const { name, score, avatarId } = req.body;
 
@@ -68,7 +69,7 @@ router.put('/players/:id', async (req, res) => {
 });
 
 // DELETE /players/:id – Delete player
-router.delete('/players/:id', asyncHandler(async (req, res) => {
+router.delete('/players/:id', auth, asyncHandler(async (req, res) => {
   const deleted = await Player.findByIdAndDelete(req.params.id);
   if (!deleted) {
     res.status(404);
