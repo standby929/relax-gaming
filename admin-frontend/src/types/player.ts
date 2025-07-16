@@ -5,3 +5,5 @@ export interface Player {
   lastUpdated: string;
   avatarId?: string;
 }
+
+export type CreatePlayerDto = Omit<Player, '_id' | 'lastUpdated'>;

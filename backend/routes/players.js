@@ -31,32 +31,38 @@ router.get('/players/:id', asyncHandler(async (req, res) => {
 
 // POST /players – Create new player
 router.post('/players', asyncHandler(async (req, res) => {
-  const { name, score } = req.body;
+  const { name, score, avatarId } = req.body;
   if (!name || score === undefined) {
     res.status(400);
     throw new Error('Missing name or score');
   }
 
-  const newPlayer = new Player({ name, score });
+  const newPlayer = new Player({ name, score, avatarId });
   const saved = await newPlayer.save();
   res.status(201).json(saved);
 }));
 
 // PUT /players/:id – Modify player score
 router.put('/players/:id', asyncHandler(async (req, res) => {
-  const { score } = req.body;
-  const player = await Player.findByIdAndUpdate(
-    req.params.id,
-    { score, lastUpdated: Date.now() },
+  const { id } = req.params;
+
+  const updated = await Player.findByIdAndUpdate(
+    id,
+    {
+      name: req.body.name,
+      score: req.body.score,
+      avatarId: req.body.avatarId, // ⬅️ EZ IS KELL!
+      lastUpdated: new Date()
+    },
     { new: true }
   );
 
-  if (!player) {
+  if (!updated) {
     res.status(404);
     throw new Error('Player not found');
   }
 
-  res.json(player);
+  res.json(updated);
 }));
 
 // DELETE /players/:id – Delete player

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Player } from '../types/player';
+import type { CreatePlayerDto, Player } from '../types/player';
 
 export const fetchPlayers = async (): Promise<Player[]> => {
   const response = await axios.get<Player[]>('/api/players');
@@ -11,7 +11,7 @@ export const fetchPlayerById = async (playerId: string): Promise<Player> => {
   return response.data;
 };
 
-export const createPlayer = async (player: Player): Promise<Player> => {
+export const createPlayer = async (player: CreatePlayerDto): Promise<Player> => {
   const response = await axios.post<Player>('/api/players', player);
   return response.data;
 };

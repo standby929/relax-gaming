@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchPlayerById, fetchPlayers } from '../api/playerApi';
+import { fetchPlayerById, fetchPlayers, createPlayer, updatePlayer } from '../api/playerApi';
 import type { Player } from '../types/player';
 import Profile from '../components/Profile';
 import SearchBar from '../components/SearchBar';
@@ -124,11 +124,28 @@ export default function AdminPage() {
       <PlayerDrawer
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        onSave={(newPlayer) => {
-          // Küldd a backendre pl. POST-ként
-          // Itt lehet egy API hívás, majd újratöltés
-          console.log('Save player:', newPlayer);
-          setDrawerOpen(false);
+        onSave={async (playerData) => {
+          try {
+            setIsLoading(true);
+
+            if (playerToEdit) {
+              // update existing player
+              await updatePlayer({ ...playerToEdit, ...playerData });
+            } else {
+              // create new player
+              await createPlayer(playerData);
+            }
+
+            const updatedList = await fetchPlayers(); // refresh list to handle concurrency
+            setPlayerToEdit(undefined); // reset edit state
+            setAllPlayers(updatedList);
+            setFilteredPlayers(updatedList);
+          } catch (err) {
+            console.error('Failed to save player:', err);
+          } finally {
+            setIsLoading(false);
+            setDrawerOpen(false);
+          }
         }}
         existingPlayer={playerToEdit}
         isLoading={isEditLoading}
