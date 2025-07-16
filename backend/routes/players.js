@@ -30,40 +30,42 @@ router.get('/players/:id', asyncHandler(async (req, res) => {
 }));
 
 // POST /players – Create new player
-router.post('/players', asyncHandler(async (req, res) => {
+router.post('/players', async (req, res) => {
   const { name, score, avatarId } = req.body;
-  if (!name || score === undefined) {
-    res.status(400);
-    throw new Error('Missing name or score');
+
+  const existing = await Player.findOne({ name: name.trim() });
+  if (existing) {
+    return res.status(409).json({ message: 'Player with this name already exists.' });
   }
 
-  const newPlayer = new Player({ name, score, avatarId });
-  const saved = await newPlayer.save();
+  const player = new Player({ name: name.trim(), score, avatarId });
+  const saved = await player.save();
   res.status(201).json(saved);
-}));
+});
 
 // PUT /players/:id – Modify player score
-router.put('/players/:id', asyncHandler(async (req, res) => {
+router.put('/players/:id', async (req, res) => {
   const { id } = req.params;
+  const { name, score, avatarId } = req.body;
+
+  const existing = await Player.findOne({ name: name.trim(), _id: { $ne: id } });
+  if (existing) {
+    return res.status(409).json({ message: 'Another player with this name already exists.' });
+  }
 
   const updated = await Player.findByIdAndUpdate(
     id,
     {
-      name: req.body.name,
-      score: req.body.score,
-      avatarId: req.body.avatarId, // ⬅️ EZ IS KELL!
+      name: name.trim(),
+      score,
+      avatarId,
       lastUpdated: new Date()
     },
     { new: true }
   );
 
-  if (!updated) {
-    res.status(404);
-    throw new Error('Player not found');
-  }
-
   res.json(updated);
-}));
+});
 
 // DELETE /players/:id – Delete player
 router.delete('/players/:id', asyncHandler(async (req, res) => {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import axios from 'axios';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 import type { PlayerDrawerProps } from '../types/playerdrawerprops';
@@ -16,8 +17,9 @@ type FormData = {
 };
 
 export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, isLoading }: PlayerDrawerProps) {
+  const [nameError, setNameError] = useState<string | null>(null);
   const [selectedAvatar, setSelectedAvatar] = useState<Avatar | null>(null);
-
+  
   const {
     register,
     handleSubmit,
@@ -31,6 +33,25 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
     }
   });
 
+  const onSubmit = async (data: FormData) => {
+    setNameError(null); // Reset any previous error
+
+    try {
+      await onSave({
+        name: data.name.trim(),
+        score: Number(data.score),
+        avatarId: selectedAvatar?.id
+      });
+      onClose();
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setNameError(err.response.data.message);
+      } else {
+        console.error('Unexpected error while saving:', err);
+      }
+    }
+  };
+  
   useEffect(() => {
     if (existingPlayer) {
       reset({
@@ -48,15 +69,6 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
     }
   }, [existingPlayer, isOpen, reset]);
 
-  const onSubmit = (data: FormData) => {
-    onSave({
-      name: data.name.trim(),
-      score: Number(data.score),
-      avatarId: selectedAvatar?.id
-    });
-
-    onClose();
-  };
 
   return (
     <div
@@ -98,7 +110,8 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
                   : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
               )}
             />
-            <ValidationMessage message={errors.name?.message} />
+            <ValidationMessage message={errors.name?.message || nameError} />
+
           </div>
 
           <div>

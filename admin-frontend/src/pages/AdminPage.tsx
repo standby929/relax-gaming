@@ -159,11 +159,12 @@ export default function AdminPage() {
             setPlayerToEdit(undefined); // reset edit state
             setAllPlayers(updatedList);
             setFilteredPlayers(updatedList);
+            setDrawerOpen(false);
           } catch (err) {
             console.error('Failed to save player:', err);
+            throw err; // rethrow to handle in the drawer
           } finally {
             setIsLoading(false);
-            setDrawerOpen(false);
           }
         }}
         existingPlayer={playerToEdit}

@@ -1,5 +1,5 @@
 type ValidationMessageProps = {
-  message?: string;
+  message?: string | null;
 };
 
 export default function ValidationMessage({ message }: ValidationMessageProps) {
