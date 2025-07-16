@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import RelaxLogo from '../assets/logo-relax-gaming.svg';
+import PixiTitle from './PixiTitle';
 
 type LayoutProps = {
   children: ReactNode;
@@ -13,6 +14,7 @@ export default function Layout({ children }: LayoutProps) {
         alt="Relax Gaming Logo"
         className="w-48 mb-8"
       />
+      <PixiTitle />
       <div className="w-full max-w-2xl">{children}</div>
     </div>
   );

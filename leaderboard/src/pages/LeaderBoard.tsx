@@ -25,7 +25,6 @@ export default function LeaderboardPage() {
 
   return (
     <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Top 10 Players</h1>
       <ul className="divide-y divide-gray-700 bg-black rounded shadow">
         {players.map((player) => (
           <li key={player._id} className="flex items-center justify-between px-4 py-3">
