@@ -12,7 +12,7 @@ import { AVATARS } from '../api/avatars';
 
 type FormData = {
   name: string;
-  score: number;
+  score: number | '';
 };
 
 export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, isLoading }: PlayerDrawerProps) {
@@ -22,11 +22,12 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
     register,
     handleSubmit,
     reset,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm<FormData>({
+    mode: 'onChange',
     defaultValues: {
       name: '',
-      score: 0
+      score: ''
     }
   });
 
@@ -41,19 +42,17 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
     } else {
       reset({
         name: '',
-        score: 0
+        score: ''
       });
       setSelectedAvatar(null);
     }
   }, [existingPlayer, isOpen, reset]);
 
   const onSubmit = (data: FormData) => {
-    if (!selectedAvatar) return;
-
     onSave({
       name: data.name.trim(),
       score: Number(data.score),
-      avatarId: selectedAvatar.id
+      avatarId: selectedAvatar?.id
     });
 
     onClose();
@@ -81,7 +80,12 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
           <Spinner size="lg" color="blue" />
         </div>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit, (errors) => {
+            console.log('Validation errors:', errors);
+          })}
+          className="p-4 space-y-4"
+        >
           <div>
             <CustomLabel required>Name</CustomLabel>
             <input
@@ -124,8 +128,8 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
           <div className="pt-4">
             <button
               type="submit"
-              disabled={!selectedAvatar}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-white rounded bg-teal-400 hover:bg-teal-500 transition-colors disabled:opacity-50"
+              disabled={!isValid}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-white rounded bg-teal-400 hover:bg-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {existingPlayer ? 'Modify' : 'Save'}
             </button>
