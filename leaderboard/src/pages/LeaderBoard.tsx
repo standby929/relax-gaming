@@ -26,7 +26,7 @@ export default function LeaderboardPage() {
   return (
     <div className="p-4 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Top 10 Players</h1>
-      <ul className="divide-y divide-gray-200 bg-white rounded shadow">
+      <ul className="divide-y divide-gray-700 bg-black rounded shadow">
         {players.map((player) => (
           <li key={player._id} className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-4">
@@ -35,9 +35,9 @@ export default function LeaderboardPage() {
                 alt="avatar"
                 className="w-10 h-10 rounded-full object-cover border"
               />
-              <span className="font-medium text-gray-800">{player.name}</span>
+              <span className="font-medium text-gray-100">{player.name}</span>
             </div>
-            <span className="font-semibold text-blue-600">{player.score}</span>
+            <span className="font-semibold text-blue-200">{player.score}</span>
           </li>
         ))}
       </ul>

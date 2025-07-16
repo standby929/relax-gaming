@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+:root {
+  --relax-deep: #4a386f;
+  --relax-soft: #b9a6ca;
+  --relax-beige: #ffebcd;
+  --relax-bright: #4682b4;
+}

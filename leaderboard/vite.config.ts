@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
-      tailwindcss()
+      tailwindcss(),
     ],
     server: {
       proxy: {
