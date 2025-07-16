@@ -1,7 +1,9 @@
+import LeaderboardPage from "./pages/LeaderBoard"
+
 function App() {
   return (
     <>
-      Leaderboard
+      <LeaderboardPage />
     </>
   )
 }
