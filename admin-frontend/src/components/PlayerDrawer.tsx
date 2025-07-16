@@ -1,38 +1,59 @@
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 import type { PlayerDrawerProps } from '../types/playerdrawerprops';
 import type { Avatar } from '../types/avatar';
 import Spinner from './Spinner';
+import ValidationMessage from './ValidationMessage';
+import CustomLabel from './CustomLabel';
 import AvatarPicker from './AvatarPicker';
 import { AVATARS } from '../api/avatars';
 
+type FormData = {
+  name: string;
+  score: number;
+};
+
 export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, isLoading }: PlayerDrawerProps) {
-  const [name, setName] = useState('');
-  const [score, setScore] = useState<number | ''>('');
   const [selectedAvatar, setSelectedAvatar] = useState<Avatar | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm<FormData>({
+    defaultValues: {
+      name: '',
+      score: 0
+    }
+  });
 
   useEffect(() => {
     if (existingPlayer) {
-      setName(existingPlayer.name);
-      setScore(existingPlayer.score);
+      reset({
+        name: existingPlayer.name,
+        score: existingPlayer.score
+      });
       const match = AVATARS.find((a) => a.id === existingPlayer.avatarId);
       setSelectedAvatar(match || null);
     } else {
-      setName('');
-      setScore('');
+      reset({
+        name: '',
+        score: 0
+      });
       setSelectedAvatar(null);
     }
-  }, [existingPlayer, isOpen]);
+  }, [existingPlayer, isOpen, reset]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || score === '' || !selectedAvatar) return;
+  const onSubmit = (data: FormData) => {
+    if (!selectedAvatar) return;
 
     onSave({
-      name: name.trim(),
-      score: Number(score),
-      avatarId: selectedAvatar.id,
+      name: data.name.trim(),
+      score: Number(data.score),
+      avatarId: selectedAvatar.id
     });
 
     onClose();
@@ -54,29 +75,45 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
           <XMarkIcon className="h-6 w-6" />
         </button>
       </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center h-full py-10 text-gray-400">
           <Spinner size="lg" color="blue" />
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <CustomLabel required>Name</CustomLabel>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              {...register('name', { required: 'Name is required' })}
+              className={clsx(
+                'w-full rounded-md border bg-white py-2 px-3 text-sm focus:outline-none focus:ring-1',
+                errors.name
+                  ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                  : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+              )}
             />
+            <ValidationMessage message={errors.name?.message} />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700">Score</label>
+            <CustomLabel required>Score</CustomLabel>
             <input
               type="number"
-              value={score}
-              onChange={(e) => setScore(e.target.value === '' ? '' : Number(e.target.value))}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              {...register('score', {
+                required: 'Score is required',
+                min: { value: 0, message: 'Score must be at least 0' },
+                max: { value: 100000, message: 'Score must be 100000 or less' }
+              })}
+              className={clsx(
+                'w-full rounded-md border bg-white py-2 px-3 text-sm focus:outline-none focus:ring-1',
+                errors.score
+                  ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                  : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+              )}
             />
+            <ValidationMessage message={errors.score?.message} />
           </div>
 
           <AvatarPicker
@@ -87,7 +124,8 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-white rounded bg-teal-400 hover:bg-teal-500 transition-colors"
+              disabled={!selectedAvatar}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-white rounded bg-teal-400 hover:bg-teal-500 transition-colors disabled:opacity-50"
             >
               {existingPlayer ? 'Modify' : 'Save'}
             </button>
