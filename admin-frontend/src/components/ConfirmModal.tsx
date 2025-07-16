@@ -1,5 +1,7 @@
 import { Dialog } from '@headlessui/react';
 import Spinner from './Spinner';
+import { useRef } from 'react';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 
 type ConfirmModalProps = {
   isOpen: boolean;
@@ -24,11 +26,17 @@ export default function ConfirmModal({
   onCancel,
   onConfirm
 }: ConfirmModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useOutsideClick(modalRef, () => {
+    if (!inProgress) onCancel();
+  }, isOpen);
+
   return (
-    <Dialog open={isOpen} onClose={() => {}} className="fixed inset-0 z-50 flex items-center justify-center">
+    <Dialog open={isOpen} onClose={() => {onCancel}} className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
 
-      <div className="bg-white rounded-lg p-6 z-10 w-full max-w-sm mx-auto">
+      <div ref={modalRef} className="bg-white rounded-lg p-6 z-10 w-full max-w-sm mx-auto">
         <Dialog.Title className="text-lg font-semibold mb-4">
           {title}
         </Dialog.Title>

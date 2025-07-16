@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { XMarkIcon } from '@heroicons/react/24/solid';
@@ -10,6 +10,7 @@ import ValidationMessage from './ValidationMessage';
 import CustomLabel from './CustomLabel';
 import AvatarPicker from './AvatarPicker';
 import { AVATARS } from '../api/avatars';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 
 type FormData = {
   name: string;
@@ -51,6 +52,13 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
       }
     }
   };
+
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  useOutsideClick(drawerRef, () => {
+    setNameError(null); // reset error when clicking outside
+    onClose();          // close the drawer
+  }, isOpen);
   
   useEffect(() => {
     if (existingPlayer) {
@@ -77,6 +85,7 @@ export default function PlayerDrawer({ isOpen, onClose, onSave, existingPlayer, 
 
   return (
     <div
+      ref={drawerRef}
       className={clsx(
         'fixed top-0 right-0 h-full z-50 bg-white shadow-lg transition-transform duration-300 ease-in-out overflow-y-auto border-l border-gray-200',
         'w-full sm:w-1/2 lg:w-1/3',
